@@ -1,0 +1,16 @@
+Package: COVID19Dash
+Title: COVID19Dash maps Covid-19 cases and deaths
+Version: 0.0.0.9000
+Authors@R: 
+    person("Basil", "Okola", , "okolabasilowiti@gmail.com", role = c("aut", "cre"))
+Description: PKG_DESC.
+License: MIT + file LICENSE
+Imports: 
+    config,
+    golem,
+    shiny
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.1.1
+URL: http://www.github.com/bokola/covid19dash
+BugReports: http://www.github.com/bokola/covid19dash/issues
