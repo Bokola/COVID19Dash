@@ -67,12 +67,12 @@ golem::add_css_file("styles")
 
 ## 3.1 Vignette
 
-usethis::use_vignette("tidytuesday201942")
+usethis::use_vignette("COVID19Dash")
 devtools::build_vignettes()
 
 ## 3.2 Code coverage
 ## You'll need Github
-usethis::use_github()
+usethis::use_github(protocol = "ssh")
 
 # All set
 # go to dev/03_deploy.R
