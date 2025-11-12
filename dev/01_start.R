@@ -58,9 +58,22 @@ usethis::use_build_ignore("app.R")
 usethis::use_build_ignore("data-raw/")
 usethis::use_build_ignore("dev/")
 
-## Init Testing Infrastructure ----
+## 1.3 Add a data-raw folder
+
+usethis::use_data_raw()
+
+## 1.4 Init Testing Infrastructure ----
 ## Create a template for tests
 golem::use_recommended_tests()
+
+## 1.5 use recommended package
+golem::use_recommended_deps(recommended = c("shiny", "htmltools"))
+
+## 1.6. Add dependencies
+
+# usethis::use_package(package = c(
+#
+# ))
 
 ## Favicon ----
 # If you want to change the favicon (default is golem's one)
@@ -71,8 +84,6 @@ golem::use_favicon() # path = "path/to/ico". Can be an online file.
 golem::use_utils_ui(with_test = TRUE)
 golem::use_utils_server(with_test = TRUE)
 
-## Use git ----
-usethis::use_git()
 ## Sets the remote associated with 'name' to 'url'
 usethis::use_git_remote(
   name = "origin",

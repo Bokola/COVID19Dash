@@ -5,12 +5,35 @@ Authors@R:
     person("Basil", "Okola", , "okolabasilowiti@gmail.com", role = c("aut", "cre"))
 Description: PKG_DESC.
 License: MIT + file LICENSE
-Imports: 
-    config,
-    golem,
-    shiny
-Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.1.1
 URL: http://www.github.com/bokola/covid19dash
 BugReports: http://www.github.com/bokola/covid19dash/issues
+Imports: 
+    colourvalues,
+    config,
+    dplyr,
+    geojsonio,
+    ggiraph,
+    ggplot2,
+    glue,
+    golem,
+    leaflet,
+    magrittr,
+    maps,
+    markdown,
+    plotly,
+    RColorBrewer,
+    rlang,
+    shiny,
+    shinyWidgets,
+    styler,
+    withr,
+    htmltools,
+    shinythemes
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Language: en-US
+LazyData: true
+RoxygenNote: 7.3.3
