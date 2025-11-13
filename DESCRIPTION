@@ -8,27 +8,19 @@ License: MIT + file LICENSE
 URL: http://www.github.com/bokola/covid19dash
 BugReports: http://www.github.com/bokola/covid19dash/issues
 Imports: 
-    colourvalues,
     config,
     dplyr,
-    geojsonio,
-    ggiraph,
     ggplot2,
-    glue,
     golem,
+    htmltools,
     leaflet,
     magrittr,
-    maps,
-    markdown,
     plotly,
     RColorBrewer,
-    rlang,
     shiny,
+    shinythemes,
     shinyWidgets,
-    styler,
-    withr,
-    htmltools,
-    shinythemes
+    utils
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

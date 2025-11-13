@@ -1,10 +1,10 @@
-#' covid_mapper UI Function
+#'@title mod_map_ui Function
 #'
-#' @description A shiny Module.
+#' @description mod_map_ui module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for \code{shiny}.
+#' @usage mod_map_ui(id)
 #'
-#' @noRd
 #'
 #' @import shiny
 #' @import leaflet
@@ -48,8 +48,12 @@ mod_map_ui <- function(id) {
   )
 }
 
-#' covid_mapper Server Function
-#' @noRd
+#' @title mod_map_server function
+#' @description mod_map_server module.
+#'
+#' @param id Internal parameters for \code{shiny}.
+#' @usage mod_map_server(id)
+#' @export
 mod_map_server <- function(id) {
   # covid tab
   moduleServer(id, function(input, output, session) {
@@ -115,7 +119,7 @@ mod_map_server <- function(id) {
     })
 
     output$mymap <- renderLeaflet({
-      basemap
+      base_map()
     })
 
     observeEvent(input$plot_date, {
@@ -156,7 +160,7 @@ mod_map_server <- function(id) {
           stroke = FALSE,
           smoothFactor = 0.1,
           fillOpacity = 0.15,
-          fillColor = ~ cv_pal(reactive_db_large()$deaths_per_million)
+          fillColor = ~ pal(reactive_db_large()$deaths_per_million)
         ) %>%
 
         addCircleMarkers(

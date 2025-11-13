@@ -13,8 +13,13 @@
 
 # 2. All along your project
 
-golem::add_fct("nav")
+# golem::add_fct("nav")
 # golem::add_fct("row")
+
+# add functions
+
+golem::add_fct("plot")
+
 
 ## 2.1 Add modules
 
@@ -24,7 +29,6 @@ golem::add_module(name = "map")
 golem::add_module(name = "data")
 
 # golem::add_utils("ui", "dataviz")
-
 
 ## 2.2 Add dependencies
 
