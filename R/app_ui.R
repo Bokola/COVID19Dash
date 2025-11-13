@@ -62,6 +62,8 @@ golem_add_external_resources <- function() {
       app_title = "COVID-19 tracker"
     ),
 
+    # includeCSS("www/custom.css"),
+
     # Add here other external resources
     # if you have a custom.css in the inst/app/www
     # for example, you can add shinyalert::useShinyalert()
@@ -76,8 +78,8 @@ golem_add_external_resources <- function() {
       src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js",
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM",
       crossorigin="anonymous"
-    ),
-    tags$link(
+    )
+    ,tags$link(
       rel = "stylesheet",
       type = "text/css",
       href = "www/custom.css"

@@ -56,7 +56,7 @@ cls <- rep(
 )
 cls_names <- c(as.character(unique(cv_cases$country)),
               as.character(unique(cv_cases_continent$continent)),
-              # ,as.character(unique(cv_states$state)),
+              as.character(unique(cv_states$state)),
               "Global")
 country_cols <- cls[1:length(cls_names)]
 names(country_cols) <- cls_names
@@ -291,9 +291,12 @@ basemap <- leaflet(plot_map) %>%
   addTiles() %>%
   addLayersControl(
     position = "bottomright",
-    overlayGroups = c("2019-COVID (new)", "2019-COVID (cumulative)", "2003-SARS", "2009-H1N1 (swine flu)", "2014-Ebola"),
+    overlayGroups = c("2019-COVID (new)", "2019-COVID (cumulative)"#, "2003-SARS", "2009-H1N1 (swine flu)", "2014-Ebola"
+                      ),
     options = layersControlOptions(collapsed = FALSE)) %>%
-  hideGroup(c("2019-COVID (cumulative)", "2003-SARS", "2009-H1N1 (swine flu)", "2014-Ebola")) %>%
+  hideGroup(c("2019-COVID (cumulative)", "2003-SARS"
+              , "2009-H1N1 (swine flu)", "2014-Ebola"
+              )) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   fitBounds(~-100,-60,~60,70) %>%
   addLegend("bottomright", pal = cv_pal, values = ~cv_large_countries$deaths_per_million,

@@ -10,7 +10,7 @@ mod_about_ui(id)
 mod_about_server(id)
 }
 \arguments{
-\item{id, input, output, session}{Internal parameters for {shiny}.}
+\item{id, input, output, session}{Internal parameters for `{shiny}`.}
 }
 \description{
 A shiny Module.

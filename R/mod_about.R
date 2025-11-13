@@ -4,7 +4,7 @@
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id,input,output,session Internal parameters for `{shiny}`.
 #'
 #' @rdname mod_about
 #'
