@@ -2,15 +2,16 @@
 
 #' @title mode_about_ui and mod_about_server
 #'
-#' @description A shiny Module.
+#' @description mod_about_ui() function
 #'
-#' @param id,input,output,session Internal parameters for `{shiny}`.
+#' @param id Internal parameters for \code{shiny}.
 #'
-#' @rdname mod_about
+
 #'
 #' @keywords internal
+
+#' @usage mod_about_ui(id)
 #' @export
-#'
 #' @importFrom shiny NS tagList includeMarkdown
 mod_about_ui <- function(id) {
   ns <- NS(id)
@@ -28,11 +29,14 @@ mod_about_ui <- function(id) {
   )
 }
 
-#' Module server
+#' @title mod_about_server
 #'
-#' @rdname mod_about
-#' @export
+#'@description mod_about_server() function
+
+#' @param id internal shiny function
+#' @usage mod_about_server(id)
 #' @keywords internal
+#' @export
 mod_about_server <- function(id){
   moduleServer(id, function(input, output, session){
     ns <- session$ns

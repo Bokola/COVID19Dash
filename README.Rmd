@@ -4,6 +4,8 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
+
 ```{r, include = FALSE}
   knitr::opts_chunk$set(
     collapse = TRUE,
@@ -19,12 +21,14 @@ output: github_document
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
+![](inst/landing.png)
+
 ## Installation
 
 You can install the development version of `{COVID19Dash}` like so:
 
-```{r}
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
+```{r, eval=FALSE}
+devtools::install_github("bokola/COVID19Dash")
 ```
 
 ## Run
@@ -38,6 +42,33 @@ COVID19Dash::run_app()
 ## About
 
 You are reading the doc about version : `r golem::pkg_version()`
+
+## About this app
+
+This app was originally built by [Parker &
+Leclerc](https://vac-lshtm.shinyapps.io/ncov_tracker/#) to visualize
+COVID-19 cases and deaths. What’s presented here is a conversion of
+parts of it to a modularized `{golem}` framework by [Basil
+Okola](https://github.com/bokola).
+
+
+## Tech used in this app
+
++ The [`{golem}`](https://github.com/ThinkR-open/golem) Framework was used to build the Shiny App backend.
+
++ The whole app is powered by [`{shiny}`](https://github.com/rstudio/shiny).
+
++ Data visualization is done with [`{ggplot2}`](https://github.com/tidyverse/ggplot2), 
+[`{leaflet}`](https://github.com/rstudio/leaflet), and [`{plotly}`](https://github.com/plotly/plotly.R)
+
++ The UI was built with [`Boostrap`](https://getbootstrap.com/)
+
++ Docker images for both [shinyproxy](https://www.shinyproxy.io/) and [heroku](https://www.heroku.com/) were built
++ A docker container image was pushed to [dockerhub](https://hub.docker.com/)
+
+Browse the full source code at https://github.com/bokola/covid19dash
+
+
 
 This README has been compiled on the
 

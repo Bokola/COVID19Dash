@@ -4,10 +4,9 @@
 
 + The whole app is powered by [`{shiny}`](https://github.com/rstudio/shiny).
 
-+ Data visualization is done with [`{ggplot2}`](https://github.com/tidyverse/ggplot2)
++ Data visualization is done with `{ggplot2}`, `{leaflet}`, `{plotly}`
 
 + The UI was built with [`Boostrap`](https://getbootstrap.com/)
 
-+ The app was deployed on [RStudio Connect](https://rstudio.com/products/connect/)
 
 Browse the full source code at https://github.com/bokola/covid19dash

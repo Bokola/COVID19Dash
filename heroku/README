@@ -1,0 +1,15 @@
+From your command line, run:
+
+docker build -f Dockerfile_base --progress=plain -t COVID19Dash_base .
+docker build -f Dockerfile --progress=plain -t COVID19Dash:latest .
+
+Then, to push on heroku:
+
+heroku container:login
+heroku create COVID19Dash-0-0-0-9000
+heroku container:push web --app COVID19Dash-0-0-0-9000
+heroku container:release web --app COVID19Dash-0-0-0-9000
+heroku open --app COVID19Dash-0-0-0-9000
+
+> Be sure to have the heroku CLI installed.
+> You can replace COVID19Dash-0-0-0-9000 with another app name.

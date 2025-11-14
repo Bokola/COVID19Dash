@@ -1,10 +1,10 @@
-#' covid_mapper UI Function
+#'@title mod_map_ui Function
 #'
-#' @description A shiny Module.
+#' @description mod_map_ui module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for \code{shiny}.
+#' @usage mod_map_ui(id)
 #'
-#' @noRd
 #'
 #' @import shiny
 #' @import leaflet
@@ -48,8 +48,13 @@ mod_map_ui <- function(id) {
   )
 }
 
-#' covid_mapper Server Function
-#' @noRd
+#' @title mod_map_server function
+#' @description mod_map_server module.
+#' @importFrom methods slot
+#'
+#' @param id Internal parameters for \code{shiny}.
+#' @usage mod_map_server(id)
+#' @export
 mod_map_server <- function(id) {
   # covid tab
   moduleServer(id, function(input, output, session) {
@@ -72,25 +77,33 @@ mod_map_server <- function(id) {
     })
 
     reactive_db_large = reactive({
-      large_countries = reactive_db() %>% filter(alpha3 %in% worldcountry$ADM0_A3)
+      large_countries = reactive_db() %>% filter(alpha3 %in% worldcountry@data$ADM0_A3)
       #large_countries = reactive %>% filter(alpha3 %in% worldcountry$ADM0_A3)
-      worldcountry_subset = worldcountry[worldcountry$ADM0_A3 %in% large_countries$alpha3, ]
-      large_countries = large_countries[match(worldcountry_subset$ADM0_A3, large_countries$alpha3), ]
+
+      # worldcountry_subset = worldcountry[worldcountry@data$ADM0_A3 %in% large_countries$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% large_countries$alpha3
+      worldcountry_subset <- worldcountry[idx, ]
+      large_countries = large_countries[match(worldcountry_subset@data$ADM0_A3, large_countries$alpha3), ]
       large_countries
     })
 
     reactive_db_large_last7d = reactive({
-      large_countries = reactive_db_last7d() %>% filter(alpha3 %in% worldcountry$ADM0_A3)
+      large_countries = reactive_db_last7d() %>% filter(alpha3 %in% worldcountry@data$ADM0_A3)
       large_countries = large_countries[order(large_countries$alpha3), ]
       large_countries
     })
 
     reactive_polygons = reactive({
-      worldcountry[worldcountry$ADM0_A3 %in% reactive_db_large()$alpha3, ]
+      # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large()$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large()$alpha3
+      worldcountry[idx,]
     })
 
     reactive_polygons_last7d = reactive({
-      worldcountry[worldcountry$ADM0_A3 %in% reactive_db_large_last7d()$alpha3, ]
+      # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large_last7d()$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large_last7d()$alpha3
+      worldcountry[idx,]
+
     })
 
     output$reactive_case_count <- renderText({
@@ -115,7 +128,7 @@ mod_map_server <- function(id) {
     })
 
     output$mymap <- renderLeaflet({
-      basemap
+      base_map()
     })
 
     observeEvent(input$plot_date, {
@@ -156,7 +169,7 @@ mod_map_server <- function(id) {
           stroke = FALSE,
           smoothFactor = 0.1,
           fillOpacity = 0.15,
-          fillColor = ~ cv_pal(reactive_db_large()$deaths_per_million)
+          fillColor = ~ pal(reactive_db_large()$deaths_per_million)
         ) %>%
 
         addCircleMarkers(

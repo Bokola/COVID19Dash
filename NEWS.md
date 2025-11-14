@@ -1,3 +1,3 @@
-# COVID19Dash (development version)
+# COVID19Dash 1.0.0
 
-* Initial CRAN submission.
+* Initial release

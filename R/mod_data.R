@@ -1,12 +1,15 @@
-#' data UI Function
+#'@title mod_data_ui() function
 #'
 #' @description A shiny Module.
 #'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id Internal parameters for \code{shiny}.
 #'
-#' @noRd
+#' @usage mod_data_ui(id)
 #'
 #' @import shiny
+#' @importFrom utils tail write.csv
+#'
+#' @export
 mod_data_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -18,14 +21,21 @@ mod_data_ui <- function(id) {
 
 
 
-#' data Server Functions
+#' @title mod_data_server() function
 #'
-#' @noRd
+#' @param id internal shiny variable
+#'
+#' @usage mod_data_server(id)
+#' @export
+#'
 mod_data_server <- function(id) {
   moduleServer(id, function(input, output, session) {
+
+    ns <- session$ns
+
     output$downloadCsv <- downloadHandler(
       filename = function() {
-        paste("COVID_data_", cv_today$date[1], ".csv", sep = "")
+        paste("COVID-data-", Sys.Date(), ".csv", sep = "")
       },
       content = function(file) {
         cv_cases_sub = cv_cases %>% select(
