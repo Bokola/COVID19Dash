@@ -106,7 +106,6 @@ new_cases_plot <- function(cv_aggregated, plot_date) {
 #' @param start_point character string indicating point of origin
 #' @param plot_start_date Date variable
 #' @import ggplot2
-#' @importFrom plotly ggplotly
 #'
 #' @usage country_cases_plot(cv_cases, start_point, plot_start_date)
 #' @export
@@ -175,7 +174,6 @@ country_cases_plot <- function(cv_cases,
 #' @param start_point character string indicating point of origin
 #' @param plot_start_date Date variable
 
-#' @importFrom plotly ggplotly
 #' @import ggplot2
 #'
 #' @usage country_cases_cumulative(cv_cases, start_point, plot_start_date)
@@ -244,7 +242,7 @@ country_cases_cumulative <- function(cv_cases,
 #' @param start_point character string indicating point of origin
 #' @param plot_start_date Date variable
 #' @import ggplot2
-#' @importFrom plotly ggplotly
+
 #'
 #' @usage country_cases_cumulative_log(cv_cases, start_point, plot_start_date)
 #' @export

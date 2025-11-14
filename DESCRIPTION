@@ -15,6 +15,7 @@ Imports:
     htmltools,
     leaflet,
     magrittr,
+    methods,
     plotly,
     RColorBrewer,
     shiny,

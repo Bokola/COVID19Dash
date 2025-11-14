@@ -9,3 +9,7 @@ $run_dev.*
 ^.here$
 ^doc$
 ^Meta$
+^CODE_OF_CONDUCT\.md$
+^LICENSE\.md$
+^README\.Rmd$
+^/home/basil-owiti/COVID19Dash/docker$

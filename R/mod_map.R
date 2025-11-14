@@ -50,6 +50,7 @@ mod_map_ui <- function(id) {
 
 #' @title mod_map_server function
 #' @description mod_map_server module.
+#' @importFrom methods slot
 #'
 #' @param id Internal parameters for \code{shiny}.
 #' @usage mod_map_server(id)
@@ -76,25 +77,33 @@ mod_map_server <- function(id) {
     })
 
     reactive_db_large = reactive({
-      large_countries = reactive_db() %>% filter(alpha3 %in% worldcountry$ADM0_A3)
+      large_countries = reactive_db() %>% filter(alpha3 %in% worldcountry@data$ADM0_A3)
       #large_countries = reactive %>% filter(alpha3 %in% worldcountry$ADM0_A3)
-      worldcountry_subset = worldcountry[worldcountry$ADM0_A3 %in% large_countries$alpha3, ]
-      large_countries = large_countries[match(worldcountry_subset$ADM0_A3, large_countries$alpha3), ]
+
+      # worldcountry_subset = worldcountry[worldcountry@data$ADM0_A3 %in% large_countries$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% large_countries$alpha3
+      worldcountry_subset <- worldcountry[idx, ]
+      large_countries = large_countries[match(worldcountry_subset@data$ADM0_A3, large_countries$alpha3), ]
       large_countries
     })
 
     reactive_db_large_last7d = reactive({
-      large_countries = reactive_db_last7d() %>% filter(alpha3 %in% worldcountry$ADM0_A3)
+      large_countries = reactive_db_last7d() %>% filter(alpha3 %in% worldcountry@data$ADM0_A3)
       large_countries = large_countries[order(large_countries$alpha3), ]
       large_countries
     })
 
     reactive_polygons = reactive({
-      worldcountry[worldcountry$ADM0_A3 %in% reactive_db_large()$alpha3, ]
+      # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large()$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large()$alpha3
+      worldcountry[idx,]
     })
 
     reactive_polygons_last7d = reactive({
-      worldcountry[worldcountry$ADM0_A3 %in% reactive_db_large_last7d()$alpha3, ]
+      # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large_last7d()$alpha3, ]
+      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large_last7d()$alpha3
+      worldcountry[idx,]
+
     })
 
     output$reactive_case_count <- renderText({
