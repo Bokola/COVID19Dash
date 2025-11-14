@@ -4,6 +4,8 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+
+
 ```{r, include = FALSE}
   knitr::opts_chunk$set(
     collapse = TRUE,
@@ -18,6 +20,8 @@ output: github_document
 <!-- badges: start -->
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
+
+![](inst/landing.png)
 
 ## Installation
 
@@ -54,11 +58,13 @@ Okola](https://github.com/bokola).
 
 + The whole app is powered by [`{shiny}`](https://github.com/rstudio/shiny).
 
-+ Data visualization is done with [`{ggplot2}`](https://github.com/tidyverse/ggplot2)
++ Data visualization is done with [`{ggplot2}`](https://github.com/tidyverse/ggplot2), 
+[`{leaflet}`](https://github.com/rstudio/leaflet), and [`{plotly}`](https://github.com/plotly/plotly.R)
 
 + The UI was built with [`Boostrap`](https://getbootstrap.com/)
 
-+ The app was deployed on [RStudio Connect](https://rstudio.com/products/connect/)
++ Docker images for both [shinyproxy](https://www.shinyproxy.io/) and [heroku](https://www.heroku.com/) were built
++ A docker container image was pushed to [dockerhub](https://hub.docker.com/)
 
 Browse the full source code at https://github.com/bokola/covid19dash
 

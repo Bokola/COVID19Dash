@@ -14,3 +14,5 @@ $run_dev.*
 ^README\.Rmd$
 ^/home/basil-owiti/COVID19Dash/docker$
 ^/home/basil-owiti/COVID19Dash/heroku$
+^heroku$
+^docker$

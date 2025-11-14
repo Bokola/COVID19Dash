@@ -57,6 +57,8 @@ usethis::use_build_ignore("README.Rmd")
 usethis::use_build_ignore("app.R")
 usethis::use_build_ignore("data-raw/")
 usethis::use_build_ignore("dev/")
+usethis::use_build_ignore("heroku/")
+usethis::use_build_ignore("docker/")
 
 ## 1.3 Add a data-raw folder
 
