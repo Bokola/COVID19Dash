@@ -30,6 +30,7 @@ devtools::build()
 golem::add_dockerfile_with_renv()
 ## If you want to deploy to ShinyProxy
 golem::add_dockerfile_with_renv_shinyproxy(output_dir = file.path(here::here(), "docker"))
+golem::add_dockerfile_with_renv_heroku(output_dir = file.path(here::here(), "heroku"))
 
 ## Posit ----
 ## If you want to deploy on Posit related platforms
