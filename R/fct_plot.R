@@ -164,8 +164,12 @@ country_cases_plot <- function(cv_cases,
       legend.position = "",
       plot.title = element_text(size = 10)
     )
-  plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size =
-                                                                                   11)))
+  if(requireNamespace("plotly", quietly = TRUE)){
+    plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size =
+                                                                                     11)))
+  } else{
+    g1
+  }
 }
 
 #' @title country_cases_cumulative
@@ -232,8 +236,12 @@ country_cases_cumulative <- function(cv_cases,
       legend.position = "",
       plot.title = element_text(size = 10)
     )
-  plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size =
-                                                                                   11)))
+  if(requireNamespace("plotly", quietly = TRUE)){
+    plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size =
+                                                                                     11)))
+  } else{
+    g1
+  }
 }
 
 #' @title country_cases_cumulative_log
@@ -297,7 +305,11 @@ country_cases_cumulative_log <- function(cv_cases,
     # scale_colour_manual(values=country_cols) +
     scale_colour_manual(values=cls()) +
     theme(legend.title = element_blank(), legend.position = "", plot.title = element_text(size=10))
-  plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size=11)))
+  if(requireNamespace("plotly", quietly = TRUE)){
+    plotly::ggplotly(g1, tooltip = c("text")) %>% layout(legend = list(font = list(size=11)))
+  } else{
+    g1
+  }
 }
 
 # # create plotting parameters for map
