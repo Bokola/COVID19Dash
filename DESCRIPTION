@@ -9,6 +9,7 @@ URL: http://www.github.com/bokola/covid19dash
 BugReports: http://www.github.com/bokola/covid19dash/issues
 Imports: 
     config,
+    plotly,
     dplyr,
     ggplot2,
     golem,
@@ -16,7 +17,6 @@ Imports:
     leaflet,
     magrittr,
     methods,
-    plotly,
     RColorBrewer,
     shiny,
     shinythemes,
@@ -30,3 +30,5 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 RoxygenNote: 7.3.3
+Depends: 
+    R (>= 3.5)
