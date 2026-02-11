@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_data.R
 \name{mod_data_ui}
 \alias{mod_data_ui}
-\title{mod_data_ui() function}
+\title{mod_data module}
 \usage{
 mod_data_ui(id)
 }
@@ -10,5 +10,5 @@ mod_data_ui(id)
 \item{id}{Internal parameters for \code{shiny}.}
 }
 \description{
-A shiny Module.
+Prepares data for download.
 }

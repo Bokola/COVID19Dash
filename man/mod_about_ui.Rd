@@ -10,6 +10,6 @@ mod_about_ui(id)
 \item{id}{Internal parameters for \code{shiny}.}
 }
 \description{
-mod_about_ui() function
+Landing page for the app.
 }
 \keyword{internal}

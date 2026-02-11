@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_plot.R
 \name{cls}
 \alias{cls}
-\title{cls colorbrewer object}
+\title{fct_plot}
 \usage{
 cls(df1, df2, df3)
 }
@@ -14,5 +14,5 @@ cls(df1, df2, df3)
 \item{df3}{dataframe}
 }
 \description{
-cls colorbrewer object
+Helper plotting functions
 }

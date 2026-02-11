@@ -21,7 +21,11 @@ Imports:
     shiny,
     shinythemes,
     shinyWidgets,
-    utils
+    utils,
+    zoo,
+    xgboost,
+    SHAPforxgboost,
+    deSolve
 Suggests: 
     spelling,
     testthat (>= 3.0.0)
@@ -30,3 +34,5 @@ Encoding: UTF-8
 Language: en-US
 LazyData: true
 RoxygenNote: 7.3.3
+Depends: 
+    R (>= 3.5)

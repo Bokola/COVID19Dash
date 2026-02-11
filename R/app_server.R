@@ -10,6 +10,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$tab_mapper, current_tab("mapper"))
   observeEvent(input$tab_region, current_tab("region"))
   observeEvent(input$tab_data, current_tab("data"))
+  observeEvent(input$tab_predict, current_tab("predict"))
   observeEvent(input$tab_about, current_tab("about"))
 
   output$main_ui <- renderUI({
@@ -17,11 +18,13 @@ app_server <- function(input, output, session) {
            "mapper" = mod_map_ui("mapper"),
            "region" = mod_region_ui("region"),
            "data"   = mod_data_ui("data"),
+           "predict" = mod_prediction_ui("predict_mod"),
            "about"  = mod_about_ui("about"))
   })
 
   mod_map_server("mapper")
   mod_region_server("region")
   mod_data_server("data")
+  mod_prediction_server("predict_mod", cv_states = cv_states)
   mod_about_server("about")
 }

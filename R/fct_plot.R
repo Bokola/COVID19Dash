@@ -1,8 +1,6 @@
-### MAP FUNCTIONS ###
-
-
-
-#' @title cls colorbrewer object
+#' @title fct_plot
+#' @description Helper plotting functions
+#'
 #'
 #' @param df1 dataframe
 #' @param df2 dataframe

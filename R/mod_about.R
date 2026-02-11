@@ -2,7 +2,7 @@
 
 #' @title mode_about_ui and mod_about_server
 #'
-#' @description mod_about_ui() function
+#' @description Landing page for the app.
 #'
 #' @param id Internal parameters for \code{shiny}.
 #'

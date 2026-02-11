@@ -27,6 +27,8 @@ You can launch the application by running:
 COVID19Dash::run_app()
 ```
 
+For predictions go to `Prediction Model` tab.
+
 ## About
 
 You are reading the doc about version : 0.0.0.9000
@@ -66,7 +68,7 @@ This README has been compiled on the
 
 ``` r
 Sys.time()
-#> [1] "2025-11-14 14:55:10 EAT"
+#> [1] "2026-02-11 09:30:19 EAT"
 ```
 
 Here are the tests results and package coverage:
@@ -74,31 +76,18 @@ Here are the tests results and package coverage:
 ``` r
 devtools::check(quiet = TRUE)
 #> ℹ Loading COVID19Dash
-#> Warning: replacing previous import 'ggplot2::last_plot' by 'plotly::last_plot'
-#> when loading 'COVID19Dash'
-#> Loading required namespace: sp
-#> ── R CMD check results ───────────────────────────── COVID19Dash 0.0.0.9000 ────
-#> Duration: 47.1s
-#> 
-#> ❯ checking whether package ‘COVID19Dash’ can be installed ... WARNING
-#>   See below...
-#> 
-#> 0 errors ✔ | 1 warning ✖ | 0 notes ✔
-#> Error: R CMD check found WARNINGs
+#> Error in `loadNamespace()`:
+#> ! there is no package called 'function'
 ```
 
 ``` r
 covr::package_coverage()
-#> COVID19Dash Coverage: 52.48%
-#> R/run_app.R: 0.00%
-#> R/mod_about.R: 18.75%
-#> R/mod_region.R: 23.93%
-#> R/fct_plot.R: 24.27%
-#> R/mod_map.R: 52.47%
-#> R/mod_data.R: 52.70%
-#> R/app_server.R: 81.25%
-#> R/app_config.R: 100.00%
-#> R/app_ui.R: 100.00%
-#> R/golem_utils_server.R: 100.00%
-#> R/golem_utils_ui.R: 100.00%
+#> Warning in utils::install.packages(repos = NULL, lib = install_path, pkg$path,
+#> : installation of package '/home/basil-owiti/COVID19Dash' had non-zero exit
+#> status
+#> Warning in file(con, "r"): cannot open file
+#> '/tmp/RtmprrwHfx/R_LIBS353553eea87f/COVID19Dash/R/COVID19Dash': No such file or
+#> directory
+#> Error in `file()`:
+#> ! cannot open the connection
 ```
