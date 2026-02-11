@@ -1,0 +1,269 @@
+---
+title: "Predicting new COVID-19 cases in the US: A Comparison of a Compatmental model (SIR) and XGBOOST Machine Learning Model"
+author: "Basil Okola"
+date: today
+date-format: "MMMM DD, YYYY"
+abstract: |
+  **Background**: Figuring out the number of new COVID-19 cases was key in aligning interventions to hotspots. This included ensuring there were enough beds for admissions, key protection gear like face masks, oxygen supply and intensive care unit space. A lot of mechanistic models were build borrowing from the traditional SIR model. Additionally, researchers explored machine learning techniques to predict the course of the infections.
+  
+  **Methods**: In this report, we compare the performance of a SIR model to an XGBOOST prediction model in predicting new cases in each of the American states, 3 years after the pandemic.
+  
+  **Results**: The XGBOOST ML approach demonstrated robust goodness-of-fit, effectively capturing the non-linear peak dynamics across varying geographic replicates.
+format: 
+  pdf:
+    keep-tex: true
+    number-sections: true
+    geometry: margin=1in
+    header-includes:
+      - \usepackage{sectsty}
+      - \usepackage{xcolor}
+      - \usepackage{fancyhdr}
+      - \definecolor{wdlblue}{HTML}{012D4A}
+      - \definecolor{wdlteal}{HTML}{00A7B5}
+      - \sectionfont{\color{wdlblue}\uppercase}
+      - \subsectionfont{\color{wdlblue}}
+      - \usepackage{etoolbox}
+      - \makeatletter
+      - \patchcmd{\@sect}{\fi#7}{\fi\color{wdlteal}\hrule height 1.5pt \kern 3pt\color{black}#7}{}{}
+      - \makeatother
+      - \pagestyle{fancy}
+      # - \fancyhead[L]{The Lancet Infectious Diseases Format}
+      # - \fancyhead[R]{WDL Analytics Report}
+editor_options: 
+  chunk_output_type: console
+execute:
+  echo: false
+  warning: false
+bibliography: reference.bib
+csl: https://raw.githubusercontent.com/citation-style-language/styles/master/dependent/the-lancet-infectious-diseases.csl
+---
+
+
+# Introduction
+
+We chose to use data on COVID-19 cases assembled by a team from [The London School of Health & Tropical Medicine](https://vac-lshtm.shinyapps.io/ncov_tracker/#) who built a global COVID-19 tracker shiny app. I was already working on a personal project that modularized parts of the said app into a golem framework and so it was easier adding a prediction modelling capabilities rather than starting a new project. The [COVID19Dash](https://github.com/Bokola/COVID19Dash) app can be cloned from github and run seamlessly. For  predictions look at the `Prediction Model` tab.
+
+# Methods
+
+## Data
+
+We used `cv_states` data that is part of the datasets in the `COVID19Dash` package. It compiles daily COVID-19 cases in each of the states in the US. It also comes with limited spatial support (longitudes & latitudes). We chose `new_cases` as the outcome variable and generated rolling means for 7, 14, and 30 days as predictors in addition to the frequency of each state in the data to avoid having to encode the categorical variable.
+
+## Models
+
+## Missing data
+
+## Accounting for spatial and tempororal structure
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(kableExtra)
+library(xgboost)
+library(deSolve)
+
+wdl_blue   <- "#012d4a"
+wdl_teal   <- "#00a7b5"
+wdl_gray   <- "#58595b"
+wdl_light  <- "#f4f7f9"
+msf_orange <- "#FF5F00"
+msf_red <- "#EB001B"
+
+# dummy data for demonstration
+data_sample <- data.frame(
+  date = seq(as.Date("2025-01-01"), by = "day", length.out = 100),
+  new_cases = cumsum(runif(100, 5, 20)),
+  population = 1000000,
+  latitude = 1.29,
+  longitude = 36.82
+)
+
+
+```
+
+
+```{r}
+# modelling_logic.R
+# contains core functions for sir and ml modeling
+
+run_modelling_engine <- function(df) {
+  # setup colors as constants for use in plots
+  cols <- list(
+    blue = "#012d4a", teal = "#00a7b5", gray = "#58595b",
+    light = "#f4f7f9", orange = "#FF5F00", red = "#EB001B"
+  )
+  
+  # data prep
+  df_clean <- df %>%
+    mutate(date = as.Date(date),
+           time_index = as.numeric(date - min(date)),
+           case_ratio = new_cases / population) %>%
+    arrange(date)
+  
+  # xgboost modelling
+  feats <- c("latitude", "longitude", "time_index") 
+  x <- as.matrix(df_clean[, feats])
+  y <- df_clean$new_cases
+  
+  model_xgb <- xgboost::xgb.train(
+    params = list(objective = "reg:squarederror", learning_rate = 0.1),
+    data = xgboost::xgb.DMatrix(x, label = y), 
+    nrounds = 25, verbose = 0
+  )
+  df_clean$preds_xgb <- predict(model_xgb, x)
+  
+  # sir modelling
+  y0 <- c(S = 0.999, I = max(df_clean$case_ratio[1], 1e-5), R = 0)
+  fit <- optim(
+    par = c(beta = 0.25, gamma = 0.1),
+    fn = function(p) {
+      out <- try(deSolve::ode(y = y0, times = df_clean$time_index, func = function(t,v,p) {
+        list(c(-p[1]*v[1]*v[2], p[1]*v[1]*v[2] - p[2]*v[2], p[2]*v[2]))
+      }, parms = p), silent = TRUE)
+      if (inherits(out, "try-error")) return(1e12)
+      sum((out[,3] - df_clean$case_ratio)^2, na.rm = TRUE)
+    },
+    method = "L-BFGS-B", lower = c(0.01, 0.01), upper = c(2.0, 1.0)
+  )
+  
+  sir_res <- as.data.frame(deSolve::ode(y = y0, times = df_clean$time_index, 
+                                        func = function(t,v,p) list(c(-p[1]*v[1]*v[2], p[1]*v[1]*v[2] - p[2]*v[2], p[2]*v[2])), 
+                                        parms = fit$par))
+  df_clean$preds_sir <- sir_res[,3] * df_clean$population[1]
+  
+  return(list(data = df_clean, params = fit$par, colors = cols))
+}
+
+# run analysis
+results <- run_modelling_engine(data_sample)
+df <- results$data
+cols <- results$colors
+```
+
+Model comparisons
+
+```{r}
+ggplot(df, aes(x = date)) +
+  geom_point(aes(y = new_cases), color = cols$gray, alpha = 0.4) +
+  geom_line(aes(y = preds_xgb, color = "XGBoost (ML)"), size = 1) +
+  geom_line(aes(y = preds_sir, color = "SIR (Mechanistic)"), size = 1, linetype = "dashed") +
+  scale_color_manual(values = c("XGBoost (ML)" = cols$blue, "SIR (Mechanistic)" = cols$orange)) +
+  theme_minimal() +
+  labs(title = "Daily Case Projections",
+       subtitle = "Comparison of ML and SIR outputs",
+       y = "New Cases", x = "Date", color = "Model Type") +
+  theme(
+    plot.title = element_text(color = cols$blue, face = "bold"),
+    legend.position = "bottom"
+  )
+```
+
+Summary of parameters
+
+```{r}
+param_df <- data.frame(
+  Parameter = c("Beta (Transmission)", "Gamma (Recovery)", "Basic Reproduction (R0)"),
+  Value = c(results$params[1], results$params[2], results$params[1]/results$params[2])
+)
+
+param_df %>%
+  kbl(booktabs = TRUE, linesep = "", digits = 4, caption = "SIR Model Parameters") %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>%
+  row_spec(0, background = cols$blue, color = "white", bold = TRUE) %>%
+  column_spec(1, bold = TRUE, color = cols$blue) %>%
+  column_spec(2, color = cols$orange, bold = TRUE)
+```
+
+Simulations
+
+```{r}
+# modelling_logic.R
+# contains data simulation and model fitting functions
+
+simulate_cv_data <- function(n_states = 5, days = 120) {
+  # simulate data matching cv_states structure
+  states <- paste0("state_", 1:n_states)
+  
+  do.call(rbind, lapply(states, function(s) {
+    # generate a random growth curve for each replicate
+    t <- 1:days
+    peak <- runif(1, 40, 80)
+    # mechanistic curve with random noise
+    cases <- (peak * exp(-0.05 * (t - 60)^2 / 10)) + rnorm(days, 0, 2)
+    cases <- pmax(0, cases) 
+    
+    data.frame(
+      state = s,
+      date = seq(as.Date("2025-01-01"), by = "day", length.out = days),
+      new_cases = round(cases),
+      population = 1000000,
+      latitude = runif(1, -1, 1),
+      longitude = runif(1, 35, 38)
+    )
+  }))
+}
+
+fit_xgb_assessment <- function(df) {
+  # clean and feature engineer
+  df_proc <- df %>%
+    group_by(state) %>%
+    mutate(
+      time_index = as.numeric(date - min(date)),
+      # create lag features for better ml fit
+      lag_1 = lag(new_cases, 1, default = 0),
+      roll_7 = zoo::rollmean(lag_1, 7, fill = 0, align = "right")
+    ) %>%
+    ungroup()
+  
+  # split for assessment
+  train_data <- df_proc %>% filter(time_index < max(time_index) - 14)
+  test_data  <- df_proc %>% filter(time_index >= max(time_index) - 14)
+  
+  feats <- c("latitude", "longitude", "time_index", "lag_1", "roll_7")
+  
+  # train xgboost
+  dtrain <- xgboost::xgb.DMatrix(as.matrix(train_data[, feats]), label = train_data$new_cases)
+  model <- xgboost::xgb.train(
+    params = list(objective = "reg:squarederror", learning_rate = 0.05, max_depth = 4),
+    data = dtrain, nrounds = 50, verbose = 0
+  )
+  
+  # predict on test set
+  test_preds <- predict(model, as.matrix(test_data[, feats]))
+  
+  # calculate metrics
+  metrics <- test_data %>%
+    mutate(pred = test_preds) %>%
+    summarise(
+      rmse = sqrt(mean((new_cases - pred)^2)),
+      mape = mean(abs((new_cases - pred) / (new_cases + 1))) * 100
+    )
+  
+  return(list(metrics = metrics, full_data = df_proc, model = model, feats = feats))
+}
+```
+
+
+```{r}
+# simulate 10 replicates
+sim_data <- simulate_cv_data(n_states = 10, days = 150)
+results <- fit_xgb_assessment(sim_data)
+
+results$metrics %>%
+  kbl(booktabs = TRUE, caption = "Global Assessment Metrics") %>%
+  kable_styling(latex_options = "hold_position") %>%
+  row_spec(0, background = wdl_blue, color = "white")
+
+sample_state <- results$full_data %>% 
+  filter(state == "state_1") %>%
+  mutate(pred = predict(results$model, as.matrix(.[, results$feats])))
+
+ggplot(sample_state, aes(x = date)) +
+  geom_point(aes(y = new_cases), color = wdl_gray, alpha = 0.5) +
+  geom_line(aes(y = pred), color = msf_orange, size = 1) +
+  theme_minimal() +
+  labs(title = "XGBoost Fit vs Simulated Data",
+       subtitle = "State 1 - Orange line represents model prediction",
+       x = "Date", y = "New Cases")
+```
+
