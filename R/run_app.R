@@ -14,7 +14,7 @@ run_app <- function(
   uiPattern = "/",
   ...
 ) {
-  with_golem_options(
+  golem::with_golem_options(
     app = {
       # plan workers
       future::plan(future::multisession)

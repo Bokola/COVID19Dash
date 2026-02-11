@@ -1,9 +1,21 @@
-#' module for epidemic forecasting
+#' prediction ui function
+#' @description a shiny module to compare xgboost and sir models across all states
 #'
-#' @param id internal
-#' @param cv_states data
+#' @param id internal parameter for shiny
 #'
-#' @noRd
+#' @return a shiny ui taglist
+#'
+#' @importFrom shiny NS tagList sidebarLayout sidebarPanel mainPanel h4 p actionButton hr uiOutput textOutput tabsetPanel tabPanel icon tags HTML downloadButton verbatimTextOutput h5 br tableOutput downloadHandler
+#' @importFrom plotly plotlyOutput renderPlotly
+#' @importFrom DT DTOutput renderDT
+#' @import dplyr
+#' @import xgboost
+#' @import deSolve
+#' @import future
+#' @import promises
+#' @import zoo
+#' @import purrr
+#'
 #' @export
 #' @importFrom shiny NS tagList sidebarLayout sidebarPanel mainPanel h4 p actionButton hr uiOutput textOutput tabsetPanel tabPanel icon tags HTML downloadButton verbatimTextOutput h5 br tableOutput downloadHandler
 #' @importFrom plotly plotlyOutput renderPlotly
@@ -15,6 +27,7 @@
 #' @import promises
 #' @import zoo
 #' @import purrr
+#' @importFrom stats optim predict
 mod_prediction_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -33,7 +46,7 @@ mod_prediction_ui <- function(id) {
       sidebarPanel(
         h4("epidemiological forecaster"),
         p("comparing machine learning xgboost with mechanistic sir modeling"),
-        actionButton(ns("run_btn"), "run global analytics",
+        actionButton(ns("run_btn"), "run US analytics",
                      class = "btn-primary btn-block", icon = icon("play")),
         hr(),
         uiOutput(ns("picker_ui")),
@@ -67,7 +80,15 @@ mod_prediction_ui <- function(id) {
   )
 }
 
-#' @noRd
+#' prediction server function
+#'
+#' @description the server logic for the prediction module
+#'
+#' @param id internal parameter for shiny
+#' @param cv_states dataset containing covid19 records
+#'
+#' @return a shiny module server
+#'
 #' @export
 mod_prediction_server <- function(id, cv_states) {
   moduleServer(id, function(input, output, session) {
@@ -77,27 +98,29 @@ mod_prediction_server <- function(id, cv_states) {
 
     observeEvent(input$run_btn, {
       status("processing global data please wait")
+
       formatted_data <- cv_states %>%
-        mutate(
+        dplyr::mutate(
           date = as.Date(date),
           new_cases = as.numeric(new_cases),
           pop = as.numeric(population)
         ) %>%
-        filter(!is.na(date), !is.na(new_cases), pop > 0) %>%
-        group_by(state) %>%
-        arrange(date) %>%
-        mutate(
+        dplyr::filter(!is.na(date), !is.na(new_cases), pop > 0) %>%
+        dplyr::group_by(state) %>%
+        dplyr::arrange(date) %>%
+        dplyr::mutate(
           time_index = as.numeric(date - min(date)),
           case_ratio = new_cases / pop,
-          roll_7  = zoo::rollmean(lag(new_cases, 1), 7, fill = 0, align = "right"),
-          roll_14 = zoo::rollmean(lag(new_cases, 1), 14, fill = 0, align = "right"),
-          roll_30 = zoo::rollmean(lag(new_cases, 1), 30, fill = 0, align = "right")
+          roll_7  = zoo::rollmean(dplyr::lag(new_cases, 1), 7, fill = 0, align = "right"),
+          roll_14 = zoo::rollmean(dplyr::lag(new_cases, 1), 14, fill = 0, align = "right"),
+          roll_30 = zoo::rollmean(dplyr::lag(new_cases, 1), 30, fill = 0, align = "right")
         ) %>%
-        ungroup()
+        dplyr::ungroup()
 
-      p <- future_promise({
-        library(xgboost)
-        library(deSolve)
+      p <- promises::future_promise({
+        # do not use library calls here
+        # use requireNamespace if you must check but :: is preferred
+
         run_engine <- function(s_name, s_df) {
           tryCatch({
             if (nrow(s_df) < 60) return(NULL)
@@ -110,10 +133,12 @@ mod_prediction_server <- function(id, cv_states) {
               data = dtrain, nrounds = 25
             )
             raw_model <- xgboost::xgb.save.raw(model)
-            m_rmse <- sqrt(mean((y - predict(model, dtrain))^2, na.rm = TRUE))
+            # explicit namespacing for predict
+            m_rmse <- sqrt(mean((y - stats::predict(model, dtrain))^2, na.rm = TRUE))
             rm(model, dtrain); gc()
+
             y0 <- c(S = 0.999, I = max(s_df$case_ratio[1], 1e-5), R = 0)
-            fit <- optim(
+            fit <- stats::optim(
               par = c(beta = 0.25, gamma = 0.1),
               fn = function(p) {
                 out <- try(deSolve::ode(y = y0, times = s_df$time_index, func = function(t,v,p) {
@@ -127,12 +152,13 @@ mod_prediction_server <- function(id, cv_states) {
             list(state = s_name, xgb_raw = raw_model, xgb_rmse = m_rmse, sir_pars = fit$par, data_full = s_df, x_mat = x)
           }, error = function(e) NULL)
         }
+
         states_list <- unique(formatted_data$state)
         res <- lapply(states_list, function(sn) run_engine(sn, formatted_data[formatted_data$state == sn, ]))
         purrr::compact(res)
       }, seed = TRUE)
 
-      then(p, onFulfilled = function(val) {
+      promises::then(p, onFulfilled = function(val) {
         store$results <- val
         status(paste("success analyzed", length(val), "regions"))
       })

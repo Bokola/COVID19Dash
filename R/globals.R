@@ -53,6 +53,9 @@ globalVariables(
     ,"country"
     ,"margin"
     ,"alpha3"
+    ,"pop"
+    ,"population"
+    ,"state"
 
 
   )
