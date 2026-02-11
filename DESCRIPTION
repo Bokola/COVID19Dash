@@ -21,7 +21,11 @@ Imports:
     shiny,
     shinythemes,
     shinyWidgets,
-    utils
+    utils,
+    zoo,
+    xgboost,
+    SHAPforxgboost,
+    deSolve
 Suggests: 
     spelling,
     testthat (>= 3.0.0)

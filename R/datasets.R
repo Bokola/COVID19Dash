@@ -7,7 +7,7 @@
 #' cv_states
 #'
 #' COVID-19 dataset
-#' @format a dataframe of 39009 rows, 14 columns
+#' @format a dataframe of 39009 rows, 17 columns
 "cv_states"
 
 #' worldcountry

@@ -28,10 +28,11 @@ app_ui <- function(request) {
         titlePanel("COVID-19 Tracker"),
 
         fluidRow(
-          column(3, actionButton("tab_mapper", "Mapper", class = "btn-primary w-100")),
-          column(3, actionButton("tab_region", "Region Plots", class = "btn-primary w-100")),
-          column(3, actionButton("tab_data", "Data", class = "btn-primary w-100")),
-          column(3, actionButton("tab_about", "About", class = "btn-primary w-100"))
+          column(2, actionButton("tab_mapper", "Mapper", class = "btn-primary w-100")),
+          column(2, actionButton("tab_region", "Region Plots", class = "btn-primary w-100")),
+          column(2, actionButton("tab_data", "Data", class = "btn-primary w-100")),
+          column(2, actionButton("tab_predict", "Prediction Model", class = "btn-primary w-100")),
+          column(2, actionButton("tab_about", "About", class = "btn-primary w-100"))
         ),
 
         hr(),

@@ -5,7 +5,7 @@
 \alias{cv_states}
 \title{cv_states}
 \format{
-a dataframe of 39009 rows, 14 columns
+a dataframe of 39009 rows, 17 columns
 }
 \usage{
 cv_states

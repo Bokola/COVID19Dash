@@ -1,6 +1,6 @@
-#' region_plots UI Function
+#' @title mod_region
 #'
-#' @description A shiny Module.
+#' @description Region tab.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
 #'

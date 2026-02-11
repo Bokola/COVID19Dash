@@ -39,6 +39,9 @@ You can launch the application by running:
 COVID19Dash::run_app()
 ```
 
+For predictions go to `Prediction Model` tab.
+
+
 ## About
 
 You are reading the doc about version : `r golem::pkg_version()`

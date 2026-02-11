@@ -10,5 +10,5 @@ mod_map_ui(id)
 \item{id}{Internal parameters for \code{shiny}.}
 }
 \description{
-mod_map_ui module.
+A mapping module.
 }
