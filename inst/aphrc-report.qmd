@@ -41,7 +41,7 @@ csl: https://raw.githubusercontent.com/citation-style-language/styles/master/dep
 
 # Introduction
 
-We chose to use data on COVID-19 cases assembled by a team from [The London School of Health & Tropical Medicine](https://vac-lshtm.shinyapps.io/ncov_tracker/#) who built a global COVID-19 tracker shiny app. I was already working on a personal project that modularized parts of the said app into a golem framework and so it was easier adding a prediction modelling capabilities rather than starting a new project. The [COVID19Dash](https://github.com/Bokola/COVID19Dash) app can be cloned from github and run seamlessly. For  predictions look at the `Prediction Model` tab.
+We chose to use data on COVID-19 cases assembled by a team from [The London School of Health & Tropical Medicine](https://vac-lshtm.shinyapps.io/ncov_tracker/#) who built a global COVID-19 tracker shiny app. I was already working on a personal project that modularized parts of the said app into a golem framework and so it was easier adding a prediction modelling capabilities rather than starting a new project. The [COVID19Dash](https://github.com/Bokola/COVID19Dash) app can be installed from github and run seamlessly. For  predictions look at the `Prediction Model` tab.
 
 # Methods
 
@@ -51,9 +51,40 @@ We used `cv_states` data that is part of the datasets in the `COVID19Dash` packa
 
 ## Models
 
+We fitted a SIR model - a compartmental mechanistic framework that simulates the spread of infectious diseases by transitioning a population through susceptible, infectious, and recovered states using differential equations. It relies on the interaction between the transmission rate $\beta$ and the recovery rate $\gamma$ to determine the velocity and peak of an epidemic curve [@ross1916application].
+
+### SIR framework
+
+The mechanistic sir model assumes a fixed population $N$ where individuals transition between susceptible ($S$), infectious ($I$), and recovered ($R$) compartments. the dynamics are governed by the following system of ordinary differential equations, which were implemented using the `desolve` package in our workflow:
+
+$$\begin{aligned}
+\frac{dS}{dt} &= -\beta \frac{S I}{N} \\
+\frac{dI}{dt} &= \beta \frac{S I}{N} - \gamma I \\
+\frac{dR}{dt} &= \gamma I
+\end{aligned}$$
+
+where $\beta$ represents the effective transmission rate and $\gamma$ denotes the removal or recovery rate. individuals are assumed to move from the susceptible to the infectious compartment at a rate proportional to the product of $S$ and $I$.
+
+#### Basic reproduction number
+
+A critical threshold in this modeling framework is the basic reproduction number ($R_0$), which defines the average number of secondary infections produced by a single infected individual in a completely susceptible population. in our analysis, we calculated $R_0$ using the optimized parameters from each state:
+
+$$R_0 = \frac{\beta}{\gamma}$$
+
+An epidemic persists only when $R_0 > 1$. our model fitting used an optimization routine to minimize the residuals between the predicted $I(t)$ compartment and the observed case ratios across the 50 american states.
+
+### XGBOOST model
+
+We also fitted an XGBOOST model to predict the new cases. XGBoost, or Extreme Gradient Boosting, is an ensemble decision‐tree algorithm, like
+random forest regressions, but able to model more complex interactions due to its ability to boost individual trees and does not rely on a single tree. It uses a scalable tree‐boosting system to optimize predictions [@chen2016xgboost].
+
 ## Missing data
 
+We did not encounter missing data. However, depending on the objective of the research, there are a number of pathways available. In a purely ML prediction setting, researchers apply simple methods like mean/median for numeric variables or mode for categorical variables. In a purely inferential task, multiple imputations are employed under missing at random (MAR) assumption and a sensitivity analysis done to verify that the imputation method is not driving model decisions.
+
 ## Accounting for spatial and tempororal structure
+
+We did not work with a hierarchical spatial and temporal variation. However, one approach is through Hierarchical Bayesian models. In R this can be accomplished through R-INLA [@moraga2019geospatial]. This involves decomposing observed variance into structured and unstructured random effects across multiple levels, using neighboring data to inform estimates in sparse regions.
 
 
 ```{r setup, include=FALSE}
@@ -61,6 +92,8 @@ library(tidyverse)
 library(kableExtra)
 library(xgboost)
 library(deSolve)
+library(COVID19Dash)
+
 
 wdl_blue   <- "#012d4a"
 wdl_teal   <- "#00a7b5"
@@ -70,20 +103,19 @@ msf_orange <- "#FF5F00"
 msf_red <- "#EB001B"
 
 # dummy data for demonstration
-data_sample <- data.frame(
-  date = seq(as.Date("2025-01-01"), by = "day", length.out = 100),
-  new_cases = cumsum(runif(100, 5, 20)),
-  population = 1000000,
-  latitude = 1.29,
-  longitude = 36.82
-)
+# data_sample <- data.frame(
+#   date = seq(as.Date("2025-01-01"), by = "day", length.out = 100),
+#   new_cases = cumsum(runif(100, 5, 20)),
+#   population = 1000000,
+#   latitude = 1.29,
+#   longitude = 36.82
+# )
 
 
 ```
 
 
 ```{r}
-# modelling_logic.R
 # contains core functions for sir and ml modeling
 
 run_modelling_engine <- function(df) {
@@ -135,7 +167,8 @@ run_modelling_engine <- function(df) {
 }
 
 # run analysis
-results <- run_modelling_engine(data_sample)
+data("cv_states")
+results <- run_modelling_engine(cv_states)
 df <- results$data
 cols <- results$colors
 ```

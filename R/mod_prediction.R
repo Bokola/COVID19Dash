@@ -1,12 +1,11 @@
-#' prediction UI Function
+#' module for epidemic forecasting
 #'
-#' @description A shiny Module to compare XGBoost and SIR models across all states.
-#'
-#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param id internal
+#' @param cv_states data
 #'
 #' @noRd
-#'
-#' @importFrom shiny NS tagList sidebarLayout sidebarPanel mainPanel h4 p actionButton hr uiOutput textOutput tabsetPanel tabPanel plotOutput tableOutput
+#' @export
+#' @importFrom shiny NS tagList sidebarLayout sidebarPanel mainPanel h4 p actionButton hr uiOutput textOutput tabsetPanel tabPanel icon tags HTML downloadButton verbatimTextOutput h5 br tableOutput downloadHandler
 #' @importFrom plotly plotlyOutput renderPlotly
 #' @importFrom DT DTOutput renderDT
 #' @import dplyr
@@ -16,12 +15,9 @@
 #' @import promises
 #' @import zoo
 #' @import purrr
-#' prediction ui function
-#' @nord
 mod_prediction_ui <- function(id) {
-  ns <- NS(id) # shiny namespace function
+  ns <- NS(id)
   tagList(
-    # added javascript to handle client side download without python
     tags$script(HTML(paste0("
       Shiny.addCustomMessageHandler('download_plotly_png', function(message) {
         var gd = document.getElementById(message.id);
@@ -33,34 +29,27 @@ mod_prediction_ui <- function(id) {
         });
       });
     "))),
-
     sidebarLayout(
       sidebarPanel(
         h4("epidemiological forecaster"),
         p("comparing machine learning xgboost with mechanistic sir modeling"),
-
         actionButton(ns("run_btn"), "run global analytics",
                      class = "btn-primary btn-block", icon = icon("play")),
         hr(),
-
         uiOutput(ns("picker_ui")),
-
         hr(),
         h5("data exports"),
         downloadButton(ns("dl_global_csv"), "all metrics (csv)", class = "btn-info btn-block"),
         br(),
-        # button now triggers javascript for browser side download
         actionButton(ns("dl_plot_img_js"), "download plot (png)", class = "btn-info btn-block"),
         br(),
         downloadButton(ns("dl_plot_data"), "plot data (csv)", class = "btn-info btn-block"),
         br(),
         downloadButton(ns("dl_params_csv"), "state params (csv)", class = "btn-info btn-block"),
-
         hr(),
         h5("worker status"),
         verbatimTextOutput(ns("status_text"))
       ),
-
       mainPanel(
         tabsetPanel(
           tabPanel("global metrics",
@@ -68,7 +57,6 @@ mod_prediction_ui <- function(id) {
                    DT::DTOutput(ns("global_summary"))),
           tabPanel("projection comparison",
                    br(),
-                   # added explicit id for the plot to facilitate js selection
                    plotly::plotlyOutput(ns("plot_comp"), height = "500px")),
           tabPanel("model parameters",
                    br(),
@@ -79,16 +67,14 @@ mod_prediction_ui <- function(id) {
   )
 }
 
-#' mod_prediction_server
-#' @nord
+#' @noRd
+#' @export
 mod_prediction_server <- function(id, cv_states) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-
     store  <- reactiveValues(results = NULL)
     status <- reactiveVal("system idle click run to begin")
 
-    # engine logic
     observeEvent(input$run_btn, {
       status("processing global data please wait")
       formatted_data <- cv_states %>%
@@ -141,8 +127,8 @@ mod_prediction_server <- function(id, cv_states) {
             list(state = s_name, xgb_raw = raw_model, xgb_rmse = m_rmse, sir_pars = fit$par, data_full = s_df, x_mat = x)
           }, error = function(e) NULL)
         }
-        states <- unique(formatted_data$state)
-        res <- lapply(states, function(sn) run_engine(sn, formatted_data[formatted_data$state == sn, ]))
+        states_list <- unique(formatted_data$state)
+        res <- lapply(states_list, function(sn) run_engine(sn, formatted_data[formatted_data$state == sn, ]))
         purrr::compact(res)
       }, seed = TRUE)
 
@@ -153,17 +139,15 @@ mod_prediction_server <- function(id, cv_states) {
       NULL
     })
 
-    # selector logic
     selected_res <- reactive({
       req(store$results, input$state_sel)
       res <- purrr::detect(store$results, ~ .x$state == input$state_sel)
-      if (!is.null(res$xgb_raw)) {
+      if (!is.null(res) && !is.null(res$xgb_raw)) {
         res$xgb_obj <- xgboost::xgb.load.raw(res$xgb_raw)
       }
       res
     })
 
-    # plot output
     output$plot_comp <- plotly::renderPlotly({
       req(selected_res())
       res <- selected_res()
@@ -183,7 +167,6 @@ mod_prediction_server <- function(id, cv_states) {
         plotly::layout(title = paste("projections for", res$state))
     })
 
-    # handler for the js image download
     observeEvent(input$dl_plot_img_js, {
       session$sendCustomMessage("download_plotly_png", list(
         id = ns("plot_comp"),
@@ -191,20 +174,22 @@ mod_prediction_server <- function(id, cv_states) {
       ))
     })
 
-    # table outputs
     output$status_text <- renderText(status())
+
     output$picker_ui <- renderUI({
       req(store$results)
-      states <- sapply(store$results, `[[`, "state")
-      selectInput(ns("state_sel"), "focus on region", choices = sort(states))
+      states_names <- sapply(store$results, `[[`, "state")
+      selectInput(ns("state_sel"), "focus on region", choices = sort(states_names))
     })
+
     output$global_summary <- DT::renderDT({
       req(store$results)
-      df <- do.call(rbind, lapply(store$results, function(x) {
+      df_sum <- do.call(rbind, lapply(store$results, function(x) {
         data.frame(region = x$state, xgb_rmse = round(x$xgb_rmse, 2), r0 = round(x$sir_pars[1] / x$sir_pars[2], 2))
       }))
-      DT::datatable(df)
+      DT::datatable(df_sum)
     })
+
     output$rmse_table <- renderTable({
       req(selected_res())
       res <- selected_res()
@@ -215,25 +200,26 @@ mod_prediction_server <- function(id, cv_states) {
       )
     }, striped = TRUE, bordered = TRUE)
 
-    # csv downloads
     output$dl_global_csv <- downloadHandler(
       filename = function() { paste0("global_metrics_", Sys.Date(), ".csv") },
       content = function(file) {
-        df <- do.call(rbind, lapply(store$results, function(x) {
+        df_dl <- do.call(rbind, lapply(store$results, function(x) {
           data.frame(region = x$state, xgb_rmse = x$xgb_rmse, r0 = x$sir_pars[1]/x$sir_pars[2])
         }))
-        write.csv(df, file, row.names = FALSE)
+        write.csv(df_dl, file, row.names = FALSE)
       }
     )
+
     output$dl_plot_data <- downloadHandler(
       filename = function() { paste0("projection_data_", input$state_sel, ".csv") },
       content = function(file) { write.csv(selected_res()$data_full, file, row.names = FALSE) }
     )
+
     output$dl_params_csv <- downloadHandler(
       filename = function() { paste0("params_", input$state_sel, ".csv") },
       content = function(file) {
-        res <- selected_res()
-        write.csv(data.frame(region = res$state, beta = res$sir_pars[1], gamma = res$sir_pars[2]), file, row.names = FALSE)
+        res_p <- selected_res()
+        write.csv(data.frame(region = res_p$state, beta = res_p$sir_pars[1], gamma = res_p$sir_pars[2]), file, row.names = FALSE)
       }
     )
   })

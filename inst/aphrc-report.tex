@@ -94,6 +94,39 @@
 \makeatother
 
 
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 
 
 
@@ -218,7 +251,74 @@ across varying geographic replicates.
 
 We chose to use data on COVID-19 cases assembled by a team from
 \href{https://vac-lshtm.shinyapps.io/ncov_tracker/\#}{The London School
-of Health \& Tropical Medicine}
+of Health \& Tropical Medicine} who built a global COVID-19 tracker
+shiny app. I was already working on a personal project that modularized
+parts of the said app into a golem framework and so it was easier adding
+a prediction modelling capabilities rather than starting a new project.
+The \href{https://github.com/Bokola/COVID19Dash}{COVID19Dash} app can be
+cloned from github and run seamlessly. For predictions look at the
+\texttt{Prediction\ Model} tab.
+
+\section{Methods}\label{methods}
+
+\subsection{Data}\label{data}
+
+We used \texttt{cv\_states} data that is part of the datasets in the
+\texttt{COVID19Dash} package. It compiles daily COVID-19 cases in each
+of the states in the US. It also comes with limited spatial support
+(longitudes \& latitudes). We chose \texttt{new\_cases} as the outcome
+variable and generated rolling means for 7, 14, and 30 days as
+predictors in addition to the frequency of each state in the data to
+avoid having to encode the categorical variable.
+
+\subsection{Models}\label{models}
+
+We fitted a SIR model - a compartmental mechanistic framework that
+simulates the spread of infectious diseases by transitioning a
+population through susceptible, infectious, and recovered states using
+differential equations. It relies on the interaction between the
+transmission rate \(\beta\) and the recovery rate \(\gamma\) to
+determine the velocity and peak of an epidemic curve\textsuperscript{1}.
+
+\subsubsection{mathematical framework}\label{mathematical-framework}
+
+The mechanistic sir model assumes a fixed population \(N\) where
+individuals transition between susceptible (\(S\)), infectious (\(I\)),
+and recovered (\(R\)) compartments. the dynamics are governed by the
+following system of ordinary differential equations, which were
+implemented using the \texttt{desolve} package in our workflow:
+
+\[\begin{aligned}
+\frac{dS}{dt} &= -\beta \frac{S I}{N} \\
+\frac{dI}{dt} &= \beta \frac{S I}{N} - \gamma I \\
+\frac{dR}{dt} &= \gamma I
+\end{aligned}\]
+
+where \(\beta\) represents the effective transmission rate and
+\(\gamma\) denotes the removal or recovery rate. individuals are assumed
+to move from the susceptible to the infectious compartment at a rate
+proportional to the product of \(S\) and \(I\).
+
+\subsubsection{basic reproduction
+number}\label{basic-reproduction-number}
+
+A critical threshold in this modeling framework is the basic
+reproduction number (\(R_0\)), which defines the average number of
+secondary infections produced by a single infected individual in a
+completely susceptible population. in our analysis, we calculated
+\(R_0\) using the optimized parameters from each state:
+
+\[R_0 = \frac{\beta}{\gamma}\]
+
+An epidemic persists only when \(R_0 > 1\). our model fitting used an
+optimization routine to minimize the residuals between the predicted
+\(I(t)\) compartment and the observed case ratios across the 50 american
+states.
+
+\subsection{Missing data}\label{missing-data}
+
+\subsection{Accounting for spatial and tempororal
+structure}\label{accounting-for-spatial-and-tempororal-structure}
 
 Model comparisons
 
@@ -234,9 +334,9 @@ Summary of parameters
 \toprule
 \cellcolor[HTML]{012d4a}{\textcolor{white}{\textbf{Parameter}}} & \cellcolor[HTML]{012d4a}{\textcolor{white}{\textbf{Value}}}\\
 \midrule
-\textcolor[HTML]{012d4a}{\textbf{\cellcolor{gray!10}{Beta (Transmission)}}} & \textcolor[HTML]{FF5F00}{\textbf{\cellcolor{gray!10}{0.1869}}}\\
-\textcolor[HTML]{012d4a}{\textbf{Gamma (Recovery)}} & \textcolor[HTML]{FF5F00}{\textbf{0.8036}}\\
-\textcolor[HTML]{012d4a}{\textbf{\cellcolor{gray!10}{Basic Reproduction (R0)}}} & \textcolor[HTML]{FF5F00}{\textbf{\cellcolor{gray!10}{0.2325}}}\\
+\textcolor[HTML]{012d4a}{\textbf{\cellcolor{gray!10}{Beta (Transmission)}}} & \textcolor[HTML]{FF5F00}{\textbf{\cellcolor{gray!10}{0.5159}}}\\
+\textcolor[HTML]{012d4a}{\textbf{Gamma (Recovery)}} & \textcolor[HTML]{FF5F00}{\textbf{0.4663}}\\
+\textcolor[HTML]{012d4a}{\textbf{\cellcolor{gray!10}{Basic Reproduction (R0)}}} & \textcolor[HTML]{FF5F00}{\textbf{\cellcolor{gray!10}{1.1065}}}\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -251,12 +351,23 @@ Simulations
 \toprule
 \cellcolor[HTML]{012d4a}{\textcolor{white}{rmse}} & \cellcolor[HTML]{012d4a}{\textcolor{white}{mape}}\\
 \midrule
-1.460515 & 99.80213\\
+1.507113 & 112.8102\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \pandocbounded{\includegraphics[keepaspectratio]{aphrc-report_files/figure-pdf/unnamed-chunk-5-1.pdf}}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{0}{1}
+\bibitem[\citeproctext]{ref-ross1916application}
+\CSLLeftMargin{1 }%
+\CSLRightInline{Ross R. An application of the theory of probabilities to
+the study of a priori pathometry.---part i. \emph{Proceedings of the
+Royal Society of London Series A, Containing papers of a mathematical
+and physical character} 1916; \textbf{92}: 204--30.}
+
+\end{CSLReferences}
 
 
 
