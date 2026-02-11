@@ -1,6 +1,6 @@
 #'@title mod_map_ui Function
 #'
-#' @description mod_map_ui module.
+#' @description A mapping module.
 #'
 #' @param id Internal parameters for \code{shiny}.
 #' @usage mod_map_ui(id)
@@ -56,6 +56,7 @@ mod_map_ui <- function(id) {
 #' @usage mod_map_server(id)
 #' @export
 mod_map_server <- function(id) {
+  is_sf <- inherits(worldcountry, "sf")
   # covid tab
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -81,7 +82,16 @@ mod_map_server <- function(id) {
       #large_countries = reactive %>% filter(alpha3 %in% worldcountry$ADM0_A3)
 
       # worldcountry_subset = worldcountry[worldcountry@data$ADM0_A3 %in% large_countries$alpha3, ]
-      idx <- slot(worldcountry, "data")$ADM0_A3 %in% large_countries$alpha3
+      # idx <- slot(worldcountry, "data")$ADM0_A3 %in% large_countries$alpha3
+
+      if (is_sf) {
+        wc_codes <- worldcountry$ADM0_A3
+      } else {
+        wc_codes <- methods::slot(worldcountry, "data")$ADM0_A3
+      }
+
+      idx <- wc_codes %in% large_countries$alpha3
+
       worldcountry_subset <- worldcountry[idx, ]
       large_countries = large_countries[match(worldcountry_subset@data$ADM0_A3, large_countries$alpha3), ]
       large_countries
@@ -95,13 +105,25 @@ mod_map_server <- function(id) {
 
     reactive_polygons = reactive({
       # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large()$alpha3, ]
-      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large()$alpha3
+      # idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large()$alpha3
+      if (is_sf) {
+        wc_codes <- worldcountry$ADM0_A3
+      } else {
+        wc_codes <- methods::slot(worldcountry, "data")$ADM0_A3
+      }
+      idx <- wc_codes %in% reactive_db_large()$alpha3
       worldcountry[idx,]
     })
 
     reactive_polygons_last7d = reactive({
       # worldcountry[worldcountry@data$ADM0_A3 %in% reactive_db_large_last7d()$alpha3, ]
-      idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large_last7d()$alpha3
+      # idx <- slot(worldcountry, "data")$ADM0_A3 %in% reactive_db_large_last7d()$alpha3
+      if (is_sf) {
+        wc_codes <- worldcountry$ADM0_A3
+      } else {
+        wc_codes <- methods::slot(worldcountry, "data")$ADM0_A3
+      }
+      idx <- wc_codes %in% reactive_db_large_last7d()$alpha3
       worldcountry[idx,]
 
     })

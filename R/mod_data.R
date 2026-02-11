@@ -1,6 +1,6 @@
-#'@title mod_data_ui() function
+#'@title mod_data module
 #'
-#' @description A shiny Module.
+#' @description Prepares data for download.
 #'
 #' @param id Internal parameters for \code{shiny}.
 #'

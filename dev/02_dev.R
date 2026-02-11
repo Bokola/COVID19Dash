@@ -27,6 +27,7 @@ golem::add_module(name = "about")
 golem::add_module(name = "region")
 golem::add_module(name = "map")
 golem::add_module(name = "data")
+golem::add_module(name = "prediction")
 
 # golem::add_utils("ui", "dataviz")
 

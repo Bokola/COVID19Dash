@@ -6,6 +6,9 @@
 # usethis::use_pipe()
 # usethis::use_package("RColorBrewer")
 
+Sys.setenv(R_DISABLE_ALTREP = "1")
+options(future.globals.maxSize = 1000 * 1024^2)
+
 globalVariables(
   c(
     'cv_today_reduced'

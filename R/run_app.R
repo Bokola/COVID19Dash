@@ -15,14 +15,18 @@ run_app <- function(
   ...
 ) {
   with_golem_options(
-    app = shinyApp(
-      ui = app_ui,
-      server = app_server,
-      onStart = onStart,
-      options = options,
-      enableBookmarking = enableBookmarking,
-      uiPattern = uiPattern
-    ),
+    app = {
+      # plan workers
+      future::plan(future::multisession)
+      shinyApp(
+        ui = app_ui,
+        server = app_server,
+        onStart = onStart,
+        options = options,
+        enableBookmarking = enableBookmarking,
+        uiPattern = uiPattern
+      )
+    },
     golem_opts = list(...)
   )
 }
